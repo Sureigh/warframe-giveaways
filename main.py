@@ -9,22 +9,58 @@ import giveaways
 import parse_commands as parse
 import discord_templates as template
 
+# I'll be leaving a lot of comments over your code, so feel free to have a look over
+# what I wrote to get a good idea of what I've changed,
+# and then delete it afterwards when you're done. 
+
+# NOTE: Instead of importing data through JSON files, I would recommend importing
+# variables through Python files instead. 
+
+# JSON files can be notoriously slow to read, causes blocking
+# (bot cannot perform tasks asynchronously), and if your bot dies while it's
+# attempting to read the file, you will probably lose all the data on the file. 
+# For local configurations on your bot (such as temporary data storage), it's fine,
+# but for storing anything more long term, use MongoDB or a proper SQL database. 
+
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
     token = config['token']
     prefix = config['prefix']
 
+# This could be: 
+"""
+# config.py
+token = "discord token"
+prefix = "bot prefix"
+
+# main.py
+import config
+
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(config.prefix), intents=intents)
+...
+bot.start(config.token)
+"""
+# You can also use starred imports for the config if you make sure no values get shadowed
+
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=intents)
-owner = None
 
+# NOTE: Although there's no actual guidelines to follow for making bots,
+# it's generally a standard to subclass the Bot class and create your own,
+# in case there's things you want to do before the bot connects online.
+# NOTE: I would also recommend keeping this main file as flat as possible, and 
+# define the commands here in a separate file. 
 
-@bot.command(name='echo', aliases=['say', 'repeat', 'print'])
+# NOTE: discord.py (the module) actually comes with a helper script to help you
+# create a simple bot and cogs, if you need an idea on how to structure your file.
+# Type `python -m discord -h` to get an idea of what you can do. 
+
+@bot.command(aliases=['say', 'repeat', 'print'])
 async def echo(ctx):
     await ctx.channel.send(parse.get_args(ctx.message.content, arg_delimiter=''))
 
 
-@bot.command(name='embed')
+@bot.command()
 async def embed(ctx):
     try:
         dict_ = json.loads(parse.get_args(ctx.message.content, arg_delimiter=''))
@@ -54,20 +90,6 @@ async def embed(ctx):
 @bot.command(name='callvote')
 async def callvote(ctx):
     pass
-
-
-@bot.listen()
-async def on_command_error(ctx, error):
-    global owner
-    if isinstance(error, discord.ext.commands.errors.CommandNotFound) or isinstance(error, discord.errors.Forbidden):
-        return
-    if not owner:
-        owner = await bot.fetch_user(468631903390400527)
-    tb = traceback.format_exception(type(error), error, error.__traceback__)
-    tb_str = ''.join(tb[:-1]) + f'\n{tb[-1]}'
-    message = await owner.send(embed=template.error(f'```{tb_str}```', ctx.message.jump_url))
-    await ctx.channel.send(embed=template.error('```Internal Error, report submitted.```', message.jump_url))
-
 
 if __name__ == '__main__':
     asyncio.run(bot.add_cog(giveaways.Giveaways(bot)))
