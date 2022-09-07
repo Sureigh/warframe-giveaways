@@ -12,6 +12,8 @@ class Error(commands.Cog):
     # NOTE: By moving most of discord_templates here, whenever a custom error is raised,
     # you can just return the embed in the context that the error was raised in. 
 
+    # TODO: Create an exception-to-embed formatter
+
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: Exception):
         if isinstance(error, (discord.errors.Forbidden, commands.errors.CommandNotFound)):

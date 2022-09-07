@@ -5,8 +5,6 @@ with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
 
 
-class IncorrectCommandFormat(Exception):
-    pass
 
 
 def get_args(content: str, arg_delimiter: str = config['arg_delimiter'], prefix: str = config['prefix']):

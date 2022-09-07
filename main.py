@@ -6,12 +6,20 @@ import discord
 from discord.ext import tasks, commands
 
 import giveaways
-import parse_commands as parse
-import discord_templates as template
+import utils.parse_commands as parse
+import utils.templates as template
 
 # I'll be leaving a lot of comments over your code, so feel free to have a look over
 # what I wrote to get a good idea of what I've changed,
 # and then delete it afterwards when you're done. 
+
+# NOTE: I would recommend installing Jishaku.
+# It allows you to safely evaluate and run code on your bot directly without having to 
+# reboot or reload things, for quick and dirty testing.
+# https://github.com/Gorialis/jishaku
+
+# NOTE: Setting up logging can give you data about why your bot is causing issues.
+# 
 
 # NOTE: Instead of importing data through JSON files, I would recommend importing
 # variables through Python files instead. 
@@ -42,14 +50,32 @@ bot.start(config.token)
 """
 # You can also use starred imports for the config if you make sure no values get shadowed
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=intents)
+class Bot(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(
+            command_prefix=commands.when_mentioned_or(prefix), 
+            intents=discord.Intents.default(), 
+            **kwargs
+        )
+
+    async def setup_hook(self):
+        # Load cogs
+        for cog in config.cogs:
+            try:
+                await self.load_extension(cog)
+                print(f"Loaded cog {cog}")
+            except Exception as exc:
+                print(f'Could not load extension {cog} due to {exc.__class__.__name__}: {exc}')
+
+    async def on_ready(self):
+        print(f'Logged on as {self.user} (ID: {self.user.id})')
 
 # NOTE: Although there's no actual guidelines to follow for making bots,
 # it's generally a standard to subclass the Bot class and create your own,
 # in case there's things you want to do before the bot connects online.
 # NOTE: I would also recommend keeping this main file as flat as possible, and 
-# define the commands here in a separate file. 
+# define the commands here in a separate file, unless you always need the commands
+# on the bot (for testing/evaluation purposes) 
 
 # NOTE: discord.py (the module) actually comes with a helper script to help you
 # create a simple bot and cogs, if you need an idea on how to structure your file.

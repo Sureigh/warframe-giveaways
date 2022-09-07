@@ -15,3 +15,7 @@ class DisallowedChars(Exception):
 
 class NoPrecedingValue(Exception):
     pass
+
+class IncorrectCommandFormat(Exception):
+    """This exception is raised when the command format is invalid."""
+    pass

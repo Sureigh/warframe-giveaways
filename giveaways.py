@@ -9,50 +9,29 @@ from typing import List
 import discord
 from discord.ext import tasks, commands
 
-import discord_templates as template
-import mongodb
-import parse_commands as parse
+import utils.templates as template
+import utils.mongodb as mongodb
+import utils.parse_commands as parse
 
 
-class NotUser(Exception):
-    pass
+# TODO: Turn this into a cog
 
-
-class DuplicateUnit(Exception):
-    pass
-
-
-class DisallowedChars(Exception):
-    pass
-
-
-class NoPrecedingValue(Exception):
-    pass
-
-
-class Giveaway(object):
-    duration: int
-    winners: int
-    description: str
-    holder: template.Holder
-    display_holder: bool
-    prize: str
-    display_title: bool
-    message: discord.Message
-    row: str
-
+class Giveaway:
     def __init__(
             self,
-            duration: int = None,
-            winners: int = None,
-            description: str = None,
-            holder: template.Holder = None,
-            display_holder: bool = None,
-            prize: str = None,
-            display_title: bool = None,
-            message: discord.Message = None,
-            row: str = None
+            duration: int = ...,
+            winners: int = ...,
+            description: str = ...,
+            holder: template.Holder = ...,
+            display_holder: bool = ...,
+            prize: str = ...,
+            display_title: bool = ...,
+            message: discord.Message = ...,
+            row: str = ...
     ):
+        # NOTE: ... denotes a placeholder value; 
+        # You should only use None to represent something that doesn't return anything
+        # (None represents nothing; ... represents anything that *might* be there)
         self.duration = duration
         self.winners = winners
         self.description = description
@@ -74,12 +53,13 @@ class Giveaways(commands.Cog):
         self.pending_end = {}
         self.delete_giveaway = {}
 
-    @commands.command(name='edit_giveaway')
+    @commands.command()
     async def edit_giveaway(self, ctx):
         pass
 
-    @commands.command(name='start')
-    async def start(self, ctx):
+    # TODO: Use a command check here instead 
+    @commands.command()
+    async def start(self, ctx: commands.Context):
         """Starts a giveaway
         Parameters:
             duration - integer or digits followed by a unit.
@@ -88,23 +68,17 @@ class Giveaways(commands.Cog):
 
         """
         # Validate channel type
-        if isinstance(ctx.channel, discord.DMChannel):
-            return await ctx.channel.send(content='Giveaway in a DM channel?!')
-        # Validate user perm
-        allowed = (ctx.author == ctx.guild.owner)
-        for role in ctx.author.roles:
-            if role.permissions.administrator:
-                allowed = True
-        allowed_role_ids = {
-            487093541147901953: None,
-            615739153010655232: None
-        }
-        for role in ctx.author.roles:
-            if role.id in allowed_role_ids:
-                allowed = True
+        if not ctx.guild:
+            return await ctx.channel.send('Giveaway in a DM channel?!')
 
-        if not allowed:
-            return await ctx.channel.send('no perm no start giveaway')
+        # Validate user perm
+        # NOTE: The else clause only runs if the for loop was not broken
+        allowed_role_ids = [487093541147901953, 615739153010655232]
+        for role in ctx.author.roles:
+            if role.permissions.administrator or role.id in allowed_role_ids:
+                break
+        else:
+            return await ctx.send('no perm no start giveaway')
 
         # Initialise
         correct_usage = '!start 3d4h ; 1w ; Ember Prime Set'

@@ -42,8 +42,8 @@ def running_giveaway(
         holder: Holder,
         display_holder: bool,
         display_title: bool = False,
-        prize: str = None)\
-        -> discord.Embed:
+        prize: str = None
+    ) -> discord.Embed:
 
     if not display_title:
         prize = None
