@@ -1,10 +1,12 @@
 import re
 import json
 
+from utils.error import IncorrectCommandFormat
+
+# TODO: Merge this file with giveaways, no need for this to be here 
+
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
-
-
 
 
 def get_args(content: str, arg_delimiter: str = config['arg_delimiter'], prefix: str = config['prefix']):

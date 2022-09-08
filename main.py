@@ -7,7 +7,7 @@ from discord.ext import tasks, commands
 
 import giveaways
 import utils.parse_commands as parse
-import utils.templates as template
+import utils.template as template
 
 # I'll be leaving a lot of comments over your code, so feel free to have a look over
 # what I wrote to get a good idea of what I've changed,
@@ -50,6 +50,8 @@ bot.start(config.token)
 """
 # You can also use starred imports for the config if you make sure no values get shadowed
 
+COGS = ["errorhandle", ] #giveaways
+
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
@@ -60,7 +62,7 @@ class Bot(commands.Bot):
 
     async def setup_hook(self):
         # Load cogs
-        for cog in config.cogs:
+        for cog in COGS:
             try:
                 await self.load_extension(cog)
                 print(f"Loaded cog {cog}")
@@ -118,5 +120,4 @@ async def callvote(ctx):
     pass
 
 if __name__ == '__main__':
-    asyncio.run(bot.add_cog(giveaways.Giveaways(bot)))
     bot.run(token)

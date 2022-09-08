@@ -9,14 +9,17 @@ from typing import List
 import discord
 from discord.ext import tasks, commands
 
-import utils.templates as template
+import utils.template as template
 import utils.mongodb as mongodb
 import utils.parse_commands as parse
 
 
 # TODO: Turn this into a cog
+# TODO: Replace all references/mentions to Holder
 
 class Giveaway:
+    """Represents a giveaway."""
+
     def __init__(
             self,
             duration: int = ...,
