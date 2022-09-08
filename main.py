@@ -4,11 +4,12 @@ import traceback
 
 import discord
 from discord.ext import tasks, commands
+import mongodb as mongo
 
-<<<<<<< HEAD
-import giveaways
+import cogs.giveaways as giveaways
 import utils.parse_commands as parse
 import utils.template as template
+
 
 # I'll be leaving a lot of comments over your code, so feel free to have a look over
 # what I wrote to get a good idea of what I've changed,
@@ -20,7 +21,7 @@ import utils.template as template
 # https://github.com/Gorialis/jishaku
 
 # NOTE: Setting up logging can give you data about why your bot is causing issues.
-# 
+# https://discordpy.readthedocs.io/en/stable/logging.html
 
 # NOTE: Instead of importing data through JSON files, I would recommend importing
 # variables through Python files instead. 
@@ -30,14 +31,8 @@ import utils.template as template
 # attempting to read the file, you will probably lose all the data on the file. 
 # For local configurations on your bot (such as temporary data storage), it's fine,
 # but for storing anything more long term, use MongoDB or a proper SQL database. 
-=======
-import mongodb as mongo
-import parse_commands as parse
-import discord_templates as template
->>>>>>> master
 
 mongodb = mongo.Collection(mongo.TestCloud)
-
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
     token = config['token']
@@ -57,6 +52,10 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(config.prefix), int
 bot.start(config.token)
 """
 # You can also use starred imports for the config if you make sure no values get shadowed
+
+# NOTE: Although there's no actual guidelines to follow for making bots,
+# it's generally a standard to subclass the Bot class and create your own,
+# in case there's things you want to do before the bot connects online.
 
 COGS = ["errorhandle", ] #giveaways
 
@@ -80,16 +79,15 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(f'Logged on as {self.user} (ID: {self.user.id})')
 
-# NOTE: Although there's no actual guidelines to follow for making bots,
-# it's generally a standard to subclass the Bot class and create your own,
-# in case there's things you want to do before the bot connects online.
 # NOTE: I would also recommend keeping this main file as flat as possible, and 
-# define the commands here in a separate file, unless you always need the commands
+# define the commands here in a cog - unless you always need the commands
 # on the bot (for testing/evaluation purposes) 
 
 # NOTE: discord.py (the module) actually comes with a helper script to help you
 # create a simple bot and cogs, if you need an idea on how to structure your file.
 # Type `python -m discord -h` to get an idea of what you can do. 
+
+bot = Bot()
 
 @bot.command(aliases=['say', 'repeat', 'print'])
 async def echo(ctx):
@@ -142,32 +140,10 @@ async def db(ctx):
     await ctx.send(message + '```')
 
 
-@bot.command(name='callvote')
+@bot.command()
 async def callvote(ctx):
     """To be implemented"""
     pass
 
-<<<<<<< HEAD
-=======
-
-@bot.listen()
-async def on_command_error(ctx, error):
-    global owner
-    if isinstance(error, discord.ext.commands.errors.CommandNotFound) or isinstance(error, discord.errors.Forbidden):
-        return
-    if not owner:
-        owner = await bot.fetch_user(468631903390400527)
-    tb = traceback.format_exception(type(error), error, error.__traceback__)
-    tb_str = ''.join(tb[:-1]) + f'\n{tb[-1]}'
-    message = await owner.send(embed=template.error(f'```{tb_str}```', ctx.message.jump_url))
-    await ctx.channel.send(embed=template.error('```Internal Error, report submitted.```', message.jump_url))
-
-
-@bot.event
-async def setup_hook() -> None:
-    await bot.load_extension('giveaways')
-    await bot.load_extension('modmail')
-
->>>>>>> master
 if __name__ == '__main__':
     bot.run(token)
