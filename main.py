@@ -5,6 +5,7 @@ import traceback
 import discord
 from discord.ext import tasks, commands
 
+<<<<<<< HEAD
 import giveaways
 import utils.parse_commands as parse
 import utils.template as template
@@ -29,6 +30,13 @@ import utils.template as template
 # attempting to read the file, you will probably lose all the data on the file. 
 # For local configurations on your bot (such as temporary data storage), it's fine,
 # but for storing anything more long term, use MongoDB or a proper SQL database. 
+=======
+import mongodb as mongo
+import parse_commands as parse
+import discord_templates as template
+>>>>>>> master
+
+mongodb = mongo.Collection(mongo.TestCloud)
 
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
@@ -95,8 +103,7 @@ async def embed(ctx):
         embed_ = discord.Embed.from_dict(dict_)
         await ctx.send(embed=embed_)
     except (json.decoder.JSONDecodeError, TypeError) as error:
-        tb = traceback.format_exception(type(error), error, error.__traceback__)[-1]
-        return await ctx.send(embed=template.error(f'```{tb}```'))
+        return await ctx.send(embed=template.error(f'```{str(error)}```'))
     except discord.errors.HTTPException:
         correct_usage = {
             "title": "example title",
@@ -115,9 +122,52 @@ async def embed(ctx):
                                                    f'Correct example:```json\n{json.dumps(correct_usage, indent=4)}```'))
 
 
+@bot.command(name='clear')
+async def clear_threads(ctx):
+    if ctx.author.id != 468631903390400527:
+        return
+    for thread in ctx.channel.threads:
+        await thread.delete()
+
+
+@bot.command(name='db')
+async def db(ctx):
+    message = '```json\n'
+    for document in mongodb.find(None, True):
+        document = json.dumps(document, indent=4, ensure_ascii=False)
+        if len(message) + len(document) + 3 > 2000:
+            await ctx.send(message+'```')
+            message = '```json\n'
+        message += '\n' + document
+    await ctx.send(message + '```')
+
+
 @bot.command(name='callvote')
 async def callvote(ctx):
+    """To be implemented"""
     pass
 
+<<<<<<< HEAD
+=======
+
+@bot.listen()
+async def on_command_error(ctx, error):
+    global owner
+    if isinstance(error, discord.ext.commands.errors.CommandNotFound) or isinstance(error, discord.errors.Forbidden):
+        return
+    if not owner:
+        owner = await bot.fetch_user(468631903390400527)
+    tb = traceback.format_exception(type(error), error, error.__traceback__)
+    tb_str = ''.join(tb[:-1]) + f'\n{tb[-1]}'
+    message = await owner.send(embed=template.error(f'```{tb_str}```', ctx.message.jump_url))
+    await ctx.channel.send(embed=template.error('```Internal Error, report submitted.```', message.jump_url))
+
+
+@bot.event
+async def setup_hook() -> None:
+    await bot.load_extension('giveaways')
+    await bot.load_extension('modmail')
+
+>>>>>>> master
 if __name__ == '__main__':
     bot.run(token)
