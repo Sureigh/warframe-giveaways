@@ -1,18 +1,17 @@
-import re
-import time
 import asyncio
 import json
-import traceback
 import random
-from typing import List, Iterable, Union
+import re
+import time
+import traceback
+from typing import Iterable, List, Union
 
 import discord
-from discord.ext import tasks, commands
-from discord import User, Member, Reaction
-
-import utils.template as template
 import utils.mongodb as mongodb
 import utils.parse_commands as parse
+import utils.template as template
+from discord import Member, Reaction, User
+from discord.ext import commands, tasks
 
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)

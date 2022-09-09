@@ -1,8 +1,10 @@
-from discord.ext import commands
-import discord
 import traceback
-from typing import Optional, Literal
+from typing import Literal, Optional
+
+import discord
+from discord.ext import commands
 from utils import error, template
+
 
 class Error(commands.Cog):
     """Handles errors related to the bot."""

@@ -1,6 +1,6 @@
-from typing import Union, Iterable, Dict, Tuple, List
-import traceback
 import re
+import traceback
+from typing import Dict, Iterable, List, Tuple, Union
 
 import discord
 from discord.ext import commands

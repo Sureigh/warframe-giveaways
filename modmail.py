@@ -1,12 +1,12 @@
-import json
 import asyncio
+import json
 from typing import Iterable, Union
 
 import discord
 from discord import app_commands
-from discord.ext import tasks, commands
+from discord.ext import commands, tasks
 
-import discord_templates as template
+from utils import template
 
 
 async def setup(bot: commands.Bot):
