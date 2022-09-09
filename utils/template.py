@@ -5,45 +5,7 @@ from typing import Dict, Iterable, List, Tuple, Union
 import discord
 from discord.ext import commands
 
-
-class NotUser(Exception):
-    pass
-
-
-class Holder(object):
-    def __init__(self, mention: str = None, tag: str = None, string: str = None):
-        self.mention = mention
-        self.tag = tag
-        self.string = string  # Contact <name> to claim your prize / Hosted by: <name>
-
-    def __str__(self):
-        return self.string
-
-
-def error(message: str, jump_url: str = '') -> discord.Embed:
-    if jump_url:
-        jump_url = f'\n[Jump]({jump_url})'
-    return discord.Embed(
-        title="Error",
-        description=message + jump_url,
-        colour=discord.Colour.red()
-    )
-
-
-def warning(message: str) -> discord.Embed:
-    return discord.Embed(
-        title="Warning",
-        description=message,
-        colour=discord.Colour.yellow()
-    )
-
-
-def info(message: str) -> discord.Embed:
-    return discord.Embed(
-        title="Info",
-        description=message,
-        colour=discord.Colour.yellow()
-    )
+from utils.error import NotUser
 
 
 def running_giveaway(
@@ -226,57 +188,3 @@ async def create_ticket(thread_channel: discord.TextChannel,
         start_msg=start_msg
     )).id
 
-
-async def get_channel(bot: commands.Bot, channel_id: int):
-    """Tries to get channel from cache then fetches from api if failed"""
-    channel = bot.get_channel(channel_id)
-    if channel is None:
-        channel = await bot.fetch_channel(channel_id)
-    return channel
-
-
-async def get_member(
-        bot: commands.Bot = None, ctx: commands.Context = None, guild: discord.Guild = None,
-        user_id: int = None, user_tag: str = None)\
-        -> Tuple[Union[discord.User, discord.Member], List[str]]:
-    """Returns member or user object
-    Requires (user_tag and ctx) or (user_id and (bot or ctx or guild))
-    """
-    member_by_id = user_id and (ctx or guild)
-    user_by_id = user_id and bot
-    by_tag = user_tag and ctx
-    if not (member_by_id or user_by_id or by_tag):
-        raise Exception('Requires (user_tag and ctx) or (user_id and (bot or ctx or guild))')
-
-    warnings_ = []
-
-    if member_by_id:
-        if ctx:
-            guild = ctx.guild
-        member = guild.get_member(user_id)
-        if member is None:
-            try:
-                member = await guild.fetch_member(user_id)
-            except discord.NotFound:
-                if bot:
-                    try:
-                        member = await bot.fetch_user(user_id)
-                        warnings_.append(f'`{str(member)}` is not a member of the server!')
-                    except discord.NotFound:
-                        raise NotUser(f'{user_id} is not user!')
-                else:
-                    warnings_.append(f'{user_id} is not member of the server!')
-
-    elif user_by_id:
-        try:
-            member = await bot.fetch_user(user_id)
-        except discord.NotFound:
-            raise NotUser(f'{user_id} is not user!')
-    elif by_tag:
-        try:
-            member = await commands.MemberConverter().convert(ctx, user_tag)
-        except (commands.CommandError, commands.BadArgument):
-            warnings_.append(f'Cannot convert `{user_tag}` to server member')
-            member = None
-
-    return member, warnings_

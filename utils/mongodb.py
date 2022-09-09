@@ -7,25 +7,19 @@ from bson.objectid import ObjectId
 with open('config.json', encoding='utf-8') as file:
     conn = json.load(file)['connection_string']
 
-class Local:
-    cluster = pymongo.MongoClient("mongodb://localhost:27017/")
-    database = cluster["discord"]
-    collection = database['WFG']
-    archive = database['archived_giveaways']
-
-
 cluster = pymongo.MongoClient(conn)
+
 class Cloud:
     cluster = cluster
     database = cluster['discord']
     collection = database['WFG']
     archive = database['archived_giveaways']
 
-class TestCloud:
-    cluster = cluster
+class Local(Cloud):
+    cluster = pymongo.MongoClient("mongodb://localhost:27017/")
+
+class TestCloud(Cloud):
     database = cluster['Test']
-    collection = database['WFG']
-    archive = database['archived_giveaways']
 
 class Collection:
     def __init__(self, instance):
@@ -42,7 +36,7 @@ class Collection:
 
     def find(self, _id: Union[int, str, ObjectId, None], return_cursor=False):
         """
-
+        Queries database for value by key.
         :param _id: Searches document by _id, returns whole document if _id is None
         :param return_cursor:
         :return:
@@ -72,6 +66,4 @@ class Archive(Collection):
 
 
 if __name__ == '__main__':
-    import json
     db = Collection(Cloud)
-    print(json.dumps(db.archive.find(None, True), indent=4, ensure_ascii=False))

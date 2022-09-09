@@ -36,12 +36,20 @@ class Error(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: Exception):
-        if isinstance(error, (discord.errors.Forbidden, commands.errors.CommandNotFound)):
-            return
-        tb = traceback.format_exception(type(error), error, error.__traceback__)
-        tb_str = ''.join(tb[:-1]) + f'\n{tb[-1]}'
-        message = await ctx.bot.owner.send(embed=self.to_embed("error", f'```{tb_str}```', ctx.message.jump_url))
-        await ctx.channel.send(embed=template.error('```Internal Error, report submitted.```', message.jump_url))
+        match error:
+            case discord.NotFound:
+                return await ctx.send('Given message does not exist in this channel.')
+            case (discord.Forbidden, commands.CommandNotFound):
+                return
+            case ():
+                # custom errors raised here and sent here
+                # have 3 cases, 1 for each type of error severity
+                pass
+            case _:
+                tb = traceback.format_exception(type(error), error, error.__traceback__)
+                tb_str = ''.join(tb[:-1]) + f'\n{tb[-1]}'
+                message = await ctx.bot.owner.send(embed=self.to_embed("error", f'```{tb_str}```', ctx.message.jump_url))
+                await ctx.channel.send(embed=template.error('```Internal Error, report submitted.```', message.jump_url))
 
 
 async def setup(bot):

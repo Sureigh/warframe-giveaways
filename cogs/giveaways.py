@@ -8,7 +8,6 @@ from typing import Iterable, List, Union
 
 import discord
 import utils.mongodb as mongodb
-import utils.parse_commands as parse
 import utils.template as template
 from discord import Member, Reaction, User
 from discord.ext import commands, tasks
@@ -21,6 +20,11 @@ instance = {
     'production': mongodb.Cloud
 }[config['db_instance']]
 collection = mongodb.Collection(instance)
+
+# NOTE: I'm planning on replacing a lot of try/except clauses.
+# The reason for this is because it's easier to see errors that's been caught
+# in the error handler and then resolve Exceptions there instead of catching
+# and responding to them differently each time. - Sera
 
 # TODO: Turn this into a cog
 # TODO: Replace all references/mentions to Holder
@@ -68,22 +72,20 @@ class Giveaways(commands.Cog):
 
     @commands.command()
     async def edit_giveaway(self, ctx):
+        # TODO
         pass
 
     # TODO: Use a command check here instead 
     @commands.command(name='reroll')
-    async def reroll(self, ctx):
+    async def reroll(self, ctx: commands.Context):
         message_id, winner_amount = parse.get_args(ctx.message.content, return_length=2)
 
         # Validate args
         if not message_id:
             return await ctx.send(embed=template.error('Missing argument: message id'))
 
-        # Get message to retrieve reactions
-        try:
-            message = await ctx.fetch_message(message_id)
-        except discord.errors.NotFound:
-            return await ctx.send(embed=template.error('Given message does not exist in this channel'))
+        message = await ctx.fetch_message(message_id)
+        ctx.send(embed=template.error())
 
         # Find db record of giveaway
         document = collection.archive.find(message_id)  # noqa
@@ -181,6 +183,7 @@ class Giveaways(commands.Cog):
         if duration.isdigit():
             duration = int(duration)
         else:
+            # TODO: Find out what __to_seconds__ does, try to see if this is necessary
             try:
                 duration = __to_seconds__(duration)
             except (DisallowedChars, DuplicateUnit, NoPrecedingValue) as error:

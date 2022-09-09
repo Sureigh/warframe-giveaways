@@ -3,11 +3,10 @@ import json
 import traceback
 
 import discord
-import mongodb
+import mongodb as mongo
 from discord.ext import commands, tasks
 
 import cogs.giveaways as giveaways
-import utils.parse_commands as parse
 import utils.template as template
 
 # I'll be leaving a lot of comments over your code, so feel free to have a look over
