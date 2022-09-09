@@ -4,7 +4,7 @@ import traceback
 
 import discord
 from discord.ext import tasks, commands
-import mongodb as mongo
+import mongodb
 
 import cogs.giveaways as giveaways
 import utils.parse_commands as parse
@@ -33,10 +33,15 @@ import utils.template as template
 # but for storing anything more long term, use MongoDB or a proper SQL database. 
 
 mongodb = mongo.Collection(mongo.TestCloud)
+
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
-    token = config['token']
-    prefix = config['prefix']
+
+instance = {
+    'test': mongodb.TestCloud,
+    'production': mongodb.Cloud
+}[config['db_instance']]
+collection = mongodb.Collection(instance)
 
 # This could be: 
 """
@@ -131,7 +136,7 @@ async def clear_threads(ctx):
 @bot.command(name='db')
 async def db(ctx):
     message = '```json\n'
-    for document in mongodb.find(None, True):
+    for document in collection.find(None, True):
         document = json.dumps(document, indent=4, ensure_ascii=False)
         if len(message) + len(document) + 3 > 2000:
             await ctx.send(message+'```')
@@ -146,4 +151,4 @@ async def callvote(ctx):
     pass
 
 if __name__ == '__main__':
-    bot.run(token)
+    bot.run(config['token'])
