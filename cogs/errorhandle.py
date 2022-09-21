@@ -15,35 +15,19 @@ class Error(commands.Cog):
     # NOTE: By moving most of discord_templates here, whenever a custom error is raised,
     # you can just return the embed in the context that the error was raised in. 
 
-    @staticmethod
-    def to_embed(
-        type: Literal["error", "warning", "info"], 
-        message: str, jump_url: Optional[str] = ''
-    ) -> discord.Embed:
-        """Formats exceptions into Discord-style embeds."""
-        if jump_url:
-            jump_url = f'\n[Jump]({jump_url})'
-        embed_type = {
-            "error": discord.Colour.red(), 
-            "warning": discord.Colour.yellow(), 
-            "info": discord.Colour.light_grey()
-        }
-        return discord.Embed(
-            title=type.capitalize(),
-            description=message+jump_url,
-            colour=embed_type[type]
-        )
-
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: Exception):
-        match error:
+    async def on_command_error(self, ctx: commands.Context, e: Exception):
+        match e:
             case discord.NotFound:
                 return await ctx.send('Given message does not exist in this channel.')
             case (discord.Forbidden, commands.CommandNotFound):
                 return
-            case ():
-                # custom errors raised here and sent here
-                # have 3 cases, 1 for each type of error severity
+            # Another benefit of subclassing your own exception type:
+            # Since all your commands subclasses CommandException,
+            # They can be handled by this match case statement
+            case error.CommandException:
+                # TODO: Write error message + jump link
+                # return await ctx.send(embed=e.to_embed())
                 pass
             case _:
                 tb = traceback.format_exception(type(error), error, error.__traceback__)

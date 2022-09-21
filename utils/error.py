@@ -1,21 +1,68 @@
+import discord
+from typing import Literal, Optional
+
 """This file contains all custom exceptions that the bot may raise."""
 
-# TODO: Consider creating a custom exception to subclass off of, so every
-# error can represent themselves as a discord embed
+class CommandException(Exception):
+    """
+    An exception that occurs when a command is invoked incorrectly.
 
-class NotUser(Exception):
+    Should only be used internally to represent exception error severity.
+    """
+
+    ErrorLevel = Literal["error", "warning", "info"]
+    error_colour = {
+        "error": discord.Colour.red(), 
+        "warning": discord.Colour.yellow(), 
+        "info": discord.Colour.light_grey()
+    }
+
+    def __init__(
+        self, 
+        error: ErrorLevel, 
+        *args, **kwargs
+    ):
+        self.error = self.error_colour[error]
+
+    # TODO: There's probably a better way to send error messages
+    # by storing the error messages inside the exceptions themselves
+    def to_embed(
+        self, 
+        message: str, jump_url: Optional[str] = ''
+    ) -> discord.Embed:
+        """Formats exceptions into Discord-style embeds."""
+
+        if jump_url:
+            jump_url = f'\n[Jump]({jump_url})'
+        return discord.Embed(
+            title=type.capitalize(),
+            description=message+jump_url,
+            colour=self.error
+        )
+
+
+# TODO: I don't actually know which category these errors are,
+# so this should be sorted out - Sera
+class NotUser(CommandException):
     """This exception is raised when the input is not a valid user."""
-    pass
 
-class DuplicateUnit(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__("error", *args, **kwargs)
 
-class DisallowedChars(Exception):
-    pass
+class DuplicateUnit(CommandException):
+    def __init__(self, *args, **kwargs):
+        super().__init__("warning", *args, **kwargs)
 
-class NoPrecedingValue(Exception):
-    pass
+class DisallowedChars(CommandException):
+    def __init__(self, *args, **kwargs):
+        super().__init__("warning", *args, **kwargs)
 
-class IncorrectCommandFormat(Exception):
+class NoPrecedingValue(CommandException):
+    def __init__(self, *args, **kwargs):
+        super().__init__("info", *args, **kwargs)
+
+class IncorrectCommandFormat(CommandException):
     """This exception is raised when the command format is invalid."""
-    pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__("error", *args, **kwargs)
