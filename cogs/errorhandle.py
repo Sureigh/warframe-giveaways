@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 import discord
 from discord.ext import commands
-from utils import error, template
+from utils import errors, template
 
 
 class Error(commands.Cog):
@@ -25,12 +25,12 @@ class Error(commands.Cog):
             # Another benefit of subclassing your own exception type:
             # Since all your commands subclasses CommandException,
             # They can be handled by this match case statement
-            case error.CommandException:
+            case errors.CommandException:
                 # TODO: Write error message + jump link
                 # return await ctx.send(embed=e.to_embed())
                 pass
             case _:
-                tb = traceback.format_exception(type(error), error, error.__traceback__)
+                tb = traceback.format_exception(type(errors), errors, errors.__traceback__)
                 tb_str = ''.join(tb[:-1]) + f'\n{tb[-1]}'
                 message = await ctx.bot.owner.send(embed=self.to_embed("error", f'```{tb_str}```', ctx.message.jump_url))
                 await ctx.channel.send(embed=template.error('```Internal Error, report submitted.```', message.jump_url))

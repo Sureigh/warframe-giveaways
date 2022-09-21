@@ -1,45 +1,26 @@
 import asyncio
 import json
 import traceback
+import aiohttp
+import logging
 
 import discord
 import mongodb as mongo
 from discord.ext import commands, tasks
 
-import cogs.giveaways as giveaways
-import utils.template as template
+from utils import template, mongodb, parse_commands as parse
+from utils.bot_extension import BotExtension
 
-# I'll be leaving a lot of comments over your code, so feel free to have a look over
-# what I wrote to get a good idea of what I've changed,
-# and then delete it afterwards when you're done. 
-
-# NOTE: I would recommend installing Jishaku.
-# It allows you to safely evaluate and run code on your bot directly without having to 
-# reboot or reload things, for quick and dirty testing.
-# https://github.com/Gorialis/jishaku
-
-# NOTE: Setting up logging can give you data about why your bot is causing issues.
-# https://discordpy.readthedocs.io/en/stable/logging.html
-
-# NOTE: Instead of importing data through JSON files, I would recommend importing
-# variables through Python files instead. 
-
-# JSON files can be notoriously slow to read, causes blocking
-# (bot cannot perform tasks asynchronously), and if your bot dies while it's
-# attempting to read the file, you will probably lose all the data on the file. 
-# For local configurations on your bot (such as temporary data storage), it's fine,
-# but for storing anything more long term, use MongoDB or a proper SQL database. 
-
-mongodb = mongo.Collection(mongo.TestCloud)
-
+# load config
 with open('config.json', encoding='utf-8') as file:
     config = json.load(file)
 
-instance = {
+# define db
+db_instance = {
     'test': mongodb.TestCloud,
     'production': mongodb.Cloud
 }[config['db_instance']]
-collection = mongodb.Collection(instance)
+collection = mongodb.Collection(db_instance)
 
 # This could be: 
 """
@@ -120,8 +101,10 @@ async def embed(ctx):
                 }
             ]
         }
-        return await ctx.send(embed=template.error(f'incorrect format\n\n'
-                                                   f'Correct example:```json\n{json.dumps(correct_usage, indent=4)}```'))
+        return await ctx.send(embed=template.error(
+            f'incorrect format\n\n'
+            f'Correct example:```json\n{json.dumps(correct_usage, indent=4)}```'
+        ))
 
 
 @bot.command(name='clear')

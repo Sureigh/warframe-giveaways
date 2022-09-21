@@ -44,25 +44,31 @@ class CommandException(Exception):
 # TODO: I don't actually know which category these errors are,
 # so this should be sorted out - Sera
 class NotUser(CommandException):
-    """This exception is raised when the input is not a valid user."""
+    """Raised when ID given is not a valid user."""
 
     def __init__(self, *args, **kwargs):
         super().__init__("error", *args, **kwargs)
 
 class DuplicateUnit(CommandException):
+    """Raised when duplicate units are found in a giveaway duration."""
+
     def __init__(self, *args, **kwargs):
         super().__init__("warning", *args, **kwargs)
 
 class DisallowedChars(CommandException):
+    """Raised when disallowed characters are found in a giveaway duration."""
+
     def __init__(self, *args, **kwargs):
         super().__init__("warning", *args, **kwargs)
 
 class NoPrecedingValue(CommandException):
+    """Raised when no digits precede a unit in a giveaway duration."""
+
     def __init__(self, *args, **kwargs):
         super().__init__("info", *args, **kwargs)
 
 class IncorrectCommandFormat(CommandException):
-    """This exception is raised when the command format is invalid."""
+    """Raised when the command format is invalid."""
 
     def __init__(self, *args, **kwargs):
         super().__init__("error", *args, **kwargs)
